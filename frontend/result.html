@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Emotion Detection Result</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5e6d3 0%, #e3d0ba 100%);
+            padding: 20px;
+        }
+
+        .result-container {
+            width: 100%;
+            max-width: 400px;
+            background: #0d1b2a;
+            color: #f8f9fa;
+            padding: 35px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(13, 27, 42, 0.25);
+            text-align: center;
+        }
+
+        h1 {
+            color: #e0e1dd;
+            margin-bottom: 25px;
+        }
+
+        .emotion {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00b4d8;
+            margin-bottom: 15px;
+        }
+
+        .confidence {
+            font-size: 1.2rem;
+            color: #a3b18a;
+            margin-bottom: 25px;
+        }
+
+        .back-button {
+            display: inline-block;
+            width: 100%;
+            padding: 12px;
+            background: #00b4d8;
+            color: #0d1b2a;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        .back-button:hover {
+            background: #90e0ef;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="result-container">
+
+        <h1>Emotion Detection</h1>
+
+        <div class="emotion">
+            {{ emotion.upper() }}
+        </div>
+        <div class="confidence">
+            Confidence: {{ confidence }}%
+        </div>
+        <a href="/" class="back-button">
+            Analyze Another Image
+        </a>
+    </div>
+</body>
+</html>

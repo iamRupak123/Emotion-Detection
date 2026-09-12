@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="description"
+        content="Upload an image and analyze facial emotions using AI."
+    >
+    <title>Emotion Detection | FeelSense</title>
+
+    <style>
+        :root {
+            --background: #f4f0e9;
+            --card: #0d1b2a;
+            --card-light: #1b263b;
+            --primary: #00b4d8;
+            --primary-hover: #90e0ef;
+            --text: #f8f9fa;
+            --muted: #a9b7c6;
+            --border: #415a77;
+            --success: #7bd389;
+            --danger: #ff7b7b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            overflow-x: hidden;
+            color: var(--text);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(0, 180, 216, 0.16), transparent 28%),
+                radial-gradient(circle at 85% 80%, rgba(144, 224, 239, 0.2), transparent 25%),
+                linear-gradient(135deg, #f5e6d3 0%, #e3d0ba 100%);
+        }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            color: #0d1b2a;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+        }
+
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 36px;
+            height: 36px;
+            color: white;
+            font-size: 1.2rem;
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(13, 27, 42, 0.2);
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #334155;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 0 5px rgba(123, 211, 137, 0.18);
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 0.9fr 1.1fr;
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .intro-panel,
+        .upload-card {
+            border-radius: 24px;
+            box-shadow: 0 24px 70px rgba(13, 27, 42, 0.18);
+        }
+
+        .intro-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 570px;
+            padding: 42px;
+            color: var(--text);
+            background:
+                linear-gradient(145deg, rgba(65, 90, 119, 0.5), transparent),
+                var(--card);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .intro-panel::before,
+        .intro-panel::after {
+            content: "";
+            position: absolute;
+            border: 1px solid rgba(144, 224, 239, 0.2);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .intro-panel::before {
+            width: 350px;
+            height: 350px;
+            right: -150px;
+            top: -100px;
+        }
+
+        .intro-panel::after {
+            width: 450px;
+            height: 450px;
+            right: -200px;
+            top: -150px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-hover);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .eyebrow::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        h1 {
+            max-width: 540px;
+            margin-top: 24px;
+            font-size: clamp(2.8rem, 6vw, 5.5rem);
+            line-height: 0.95;
+            letter-spacing: -0.08em;
+        }
+
+        h1 span {
+            color: var(--primary-hover);
+        }
+
+        .intro-description {
+            max-width: 410px;
+            margin-top: 24px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .emotion-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 34px;
+        }
+
+        .emotion-pill {
+            padding: 9px 13px;
+            color: #dbeafe;
+            font-size: 0.78rem;
+            border: 1px solid rgba(144, 224, 239, 0.25);
+            border-radius: 99px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .privacy-note {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            max-width: 350px;
+            color: var(--muted);
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .privacy-note strong {
+            color: var(--text);
+        }
+
+        .upload-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 570px;
+            padding: 42px;
+            color: var(--text);
+            background: rgba(13, 27, 42, 0.96);
+        }
+
+        .upload-card h2 {
+            margin-top: 12px;
+            font-size: clamp(1.7rem, 3vw, 2.5rem);
+            letter-spacing: -0.06em;
+        }
+
+        .upload-card > p {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .upload-form {
+            margin-top: 28px;
+        }
+
+        .file-drop-area {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 245px;
+            padding: 28px;
+            text-align: center;
+            border: 2px dashed var(--border);
+            border-radius: 18px;
+            background: var(--card-light);
+            cursor: pointer;
+            transition: 0.25s ease;
+        }
+
+        .file-drop-area:hover,
+        .file-drop-area.dragging {
+            border-color: var(--primary);
+            background: #22324d;
+            transform: translateY(-2px);
+        }
+
+        .file-drop-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            display: grid;
+            place-items: center;
+            width: 65px;
+            height: 65px;
+            margin-bottom: 16px;
+            font-size: 1.8rem;
+            background: rgba(0, 180, 216, 0.15);
+            border-radius: 50%;
+        }
+
+        .file-title {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .file-msg {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .file-name {
+            display: none;
+            max-width: 100%;
+            margin-top: 10px;
+            overflow: hidden;
+            color: var(--primary-hover);
+            font-size: 0.8rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .preview {
+            display: none;
+            width: 100%;
+            max-height: 190px;
+            margin-top: 18px;
+            border-radius: 12px;
+            object-fit: contain;
+        }
+
+        .submit-button {
+            width: 100%;
+            margin-top: 18px;
+            padding: 15px 20px;
+            color: var(--card);
+            font-size: 1rem;
+            font-weight: 800;
+            background: var(--primary);
+            border: 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .submit-button:hover:not(:disabled) {
+            background: var(--primary-hover);
+            box-shadow: 0 0 22px rgba(0, 180, 216, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .submit-button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 16px;
+            color: var(--primary-hover);
+            font-size: 0.85rem;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(144, 224, 239, 0.3);
+            border-top-color: var(--primary-hover);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .message {
+            display: none;
+            margin-top: 16px;
+            padding: 12px;
+            color: var(--danger);
+            font-size: 0.85rem;
+            text-align: center;
+            border: 1px solid rgba(255, 123, 123, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 123, 123, 0.08);
+        }
+
+        .message.visible {
+            display: block;
+        }
+
+        .footer-note {
+            margin-top: 20px;
+            color: #52616f;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 850px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .intro-panel,
+            .upload-card {
+                min-height: auto;
+            }
+
+            .intro-panel {
+                min-height: 430px;
+            }
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 16px;
+            }
+
+            .navbar {
+                margin-bottom: 20px;
+            }
+
+            .status {
+                display: none;
+            }
+
+            .intro-panel,
+            .upload-card {
+                padding: 28px 22px;
+                border-radius: 20px;
+            }
+
+            h1 {
+                font-size: 3.5rem;
+            }
+
+            .file-drop-area {
+                min-height: 220px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page-wrapper">
+        <header class="navbar">
+            <div class="brand">
+                <span class="brand-mark">◉</span>
+                <span>FeelSense</span>
+            </div>
+
+            <div class="status">
+                <span class="status-dot"></span>
+                AI system ready
+            </div>
+        </header>
+
+        <section class="content">
+            <section class="intro-panel">
+                <div>
+                    <div class="eyebrow">AI-powered emotion detection</div>
+
+                    <h1>
+                        See what words
+                        <span>cannot say.</span>
+                    </h1>
+
+                    <p class="intro-description">
+                        Upload a facial image and let our emotion detection system
+                        identify meaningful emotional signals.
+                    </p>
+
+                    <div class="emotion-list">
+                        <span class="emotion-pill">Happy</span>
+                        <span class="emotion-pill">Sad</span>
+                        <span class="emotion-pill">Angry</span>
+                        <span class="emotion-pill">Surprised</span>
+                        <span class="emotion-pill">Neutral</span>
+                        <span class="emotion-pill">Fearful</span>
+                        <span class="emotion-pill">Disgusted</span>
+                    </div>
+                </div>
+
+                <p class="privacy-note">
+                    <span>🔒</span>
+                    <span>
+                        <strong>Privacy matters.</strong><br>
+                        Your image is used only for analysis and is not displayed
+                        publicly.
+                    </span>
+                </p>
+            </section>
+
+            <section class="upload-card">
+                <div class="eyebrow">Start an analysis</div>
+
+                <h2>Upload your image</h2>
+
+                <p>
+                    Choose a clear image containing a visible face for the most
+                    accurate result.
+                </p>
+
+                <form
+                    id="uploadimage"
+                    class="upload-form"
+                    action="/upload"
+                    method="POST"
+                    enctype="multipart/form-data"
+                >
+                    <label class="file-drop-area" for="image-upload">
+                        <span class="upload-icon">📸</span>
+                        <span class="file-title">Browse or drag your image here</span>
+                        <span class="file-msg">PNG, JPG, JPEG up to 10MB</span>
+                        <span id="file-name" class="file-name"></span>
+
+                        <input
+                            type="file"
+                            id="image-upload"
+                            name="image"
+                            accept="image/png, image/jpeg, image/jpg"
+                            required
+                        >
+
+                        <img id="preview" class="preview" alt="Selected image preview">
+                    </label>
+
+                    <button class="submit-button" type="submit" id="submit-button" disabled>
+                        Analyze Emotion
+                    </button>
+
+                    <div class="loading" id="loading">
+                        <span class="spinner"></span>
+                        Analyzing your image...
+                    </div>
+
+                    <div class="message" id="message"></div>
+                </form>
+
+                <p class="footer-note">
+                    By continuing, you agree to use this tool responsibly.
+                </p>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        const form = document.getElementById("uploadimage");
+        const fileInput = document.getElementById("image-upload");
+        const dropArea = document.querySelector(".file-drop-area");
+        const fileName = document.getElementById("file-name");
+        const preview = document.getElementById("preview");
+        const submitButton = document.getElementById("submit-button");
+        const loading = document.getElementById("loading");
+        const message = document.getElementById("message");
+
+        const maxFileSize = 10 * 1024 * 1024;
+
+        function showMessage(text) {
+            message.textContent = text;
+            message.classList.add("visible");
+        }
+
+        function hideMessage() {
+            message.textContent = "";
+            message.classList.remove("visible");
+        }
+
+        function handleFile(file) {
+            hideMessage();
+
+            if (!file) {
+                submitButton.disabled = true;
+                fileName.style.display = "none";
+                preview.style.display = "none";
+                return;
+            }
+
+            const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+
+            if (!validTypes.includes(file.type)) {
+                showMessage("Please select a JPG, JPEG, or PNG image.");
+                fileInput.value = "";
+                submitButton.disabled = true;
+                return;
+            }
+
+            if (file.size > maxFileSize) {
+                showMessage("The selected image must be smaller than 10MB.");
+                fileInput.value = "";
+                submitButton.disabled = true;
+                return;
+            }
+
+            fileName.textContent = file.name;
+            fileName.style.display = "block";
+            submitButton.disabled = false;
+
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+                preview.src = event.target.result;
+                preview.style.display = "block";
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        fileInput.addEventListener("change", function () {
+            handleFile(fileInput.files[0]);
+        });
+
+        ["dragenter", "dragover"].forEach((eventName) => {
+            dropArea.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                dropArea.classList.add("dragging");
+            });
+        });
+
+        ["dragleave", "drop"].forEach((eventName) => {
+            dropArea.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                dropArea.classList.remove("dragging");
+            });
+        });
+
+        dropArea.addEventListener("drop", (event) => {
+            const file = event.dataTransfer.files[0];
+
+            if (file) {
+                fileInput.files = event.dataTransfer.files;
+                handleFile(file);
+            }
+        });
+
+        form.addEventListener("submit", function () {
+            submitButton.disabled = true;
+            loading.classList.add("active");
+            hideMessage();
+        });
+    </script>
+</body>
+</html>
+
+<!-- Main fixes included:
+
+- Removed the duplicated HTML document.
+- Added a proper responsive landing page layout.
+- Added drag-and-drop image uploading.
+- Added image preview before submission.
+- Added file type validation.
+- Added a 10MB file size limit.
+- Disabled the submit button until an image is selected.
+- Added loading feedback after form submission.
+- Preserved your backend endpoint: `POST /upload`.
+- Preserved the required multipart upload configuration:
+  `enctype="multipart/form-data"`. -->
